@@ -11,11 +11,16 @@ const port = process.env.port || 3000
 
 server.app.use(express.json())
 
+server.app.get('/', (req, res) => {
+    res.send('Welcome to CourseWork Management Portal!')
+})
+
 server.app.use('/users', userRouter)
 server.app.use('/courses', courseRouter)
 server.app.use('/enroll',enrollmentRouter)
 server.app.use('/assignments',assignmentRouter)
 server.app.use('/submissions',submissionRouter)
+
 
 server.app.use((req,res,next) => {
     res.status(404).send({Error: 'Page not found'})
