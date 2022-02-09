@@ -68,12 +68,11 @@ const assignmentJob = async () => {
     const date = new Date()
     assignments.forEach(async (a) => {
         if(a.start_time.getTime() <= date.getTime() && a.end_time.getTime() > date.getTime()) {
-            console.log('updating...')
+            console.log('Hourly Job - Assignments Updated ', date)
             const courseId = a.course_id
             const course = await Course.findById(courseId)
             const enrolls = await Enrollment.find({course_id: courseId})
             const studentIds = enrolls.map((enroll) => enroll.student_id)
-            console.log(studentIds)
             studentIds.forEach((id) => io.sockets.to(id.toString()).emit(
                 'notifications',
                 'Assignment open for course - ' + course.name

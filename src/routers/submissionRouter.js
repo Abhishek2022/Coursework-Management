@@ -30,6 +30,9 @@ router.get('/upload/:id', auth.studentAuth, upload.single('file'), async(req, re
         })
         if(!enrollment) throw 'Not enrolled in the course'
 
+        const date = new Date()
+        if(assignment.start_time.getTime() > date.getTime()) throw 'Assignment is not open for submissions'
+        if(assignment.end_time.getTime() < date.getTime()) throw 'Submission deadline is over'
         const submission = Submission({
             student_id: req.user._id,
             assignment_id: req.params.id,
@@ -72,6 +75,26 @@ router.patch('/grade/:id', auth.educatorAuth, async(req, res) => {
         await submission.save()
         res.send(submission)
     } catch (e) {
+        res.status(400).send({Error: e})
+    }
+})
+
+// Student to view their grade 
+router.get('/viewGrade/:id', auth.studentAuth, async (req, res) => {
+    try {
+        const submission = await Submission.findById(req.params.id)
+        if(!submission) throw 'Could not find submission'
+        const assignment = await Assignment.findById(submission.assignment_id.toString())
+        if(!assignment) throw 'Could not find assignment'
+
+        if(!req.user._id.equals(submission.student_id)) throw 'Not allowed to view this submission'
+        if(submission.grade == 'NG') throw 'Assignment is yet to be graded'
+        const date = new Date()
+        if(assignment.end_time.getTime() > date.getTime()) throw 'Assignment is not over yet!'
+
+        res.send({"Grade": submission.grade})
+    } catch(e) {
+        console.log(e)
         res.status(400).send({Error: e})
     }
 })

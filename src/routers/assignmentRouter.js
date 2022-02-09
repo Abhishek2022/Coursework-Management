@@ -13,6 +13,15 @@ router.post('/create', auth.educatorAuth, async(req, res) => {
         if(!course) throw 'Could not find course'
         if(!course.educator_id.equals(req.user._id)) throw 'Not authorized to add assignment'
 
+        if(course.status!='running') throw ('Cannot create assignment for ' + course.status + ' course')
+
+        if(req.body.start_time && Date.parse(req.body.start_time) < course.start_date.getTime()) {
+            throw 'Assignment start time should be after the course starts'
+        }
+        if(req.body.end_time && Date.parse(req.body.end_time) > course.end_date.getTime()) {
+            throw 'Assignment end time should be before the course ends'
+        }
+
         const assignment = Assignment(req.body)
         assignment.course_id = course._id
         await assignment.save()
@@ -35,6 +44,13 @@ router.patch('/update/:id', auth.educatorAuth, async(req, res) => {
 
         const course = await Course.findById(assignment.course_id)
         if(!course.educator_id.equals(req.user._id)) throw 'Not authorized to edit'
+
+        if(req.body.start_time && Date.parse(req.body.start_time) < course.start_date.getTime()) {
+            throw 'Assignment start time should be after the course starts'
+        }
+        if(req.body.end_time && Date.parse(req.body.end_time) > course.end_date.getTime()) {
+            throw 'Assignment end time should be before the course ends'
+        }
 
         updates.forEach((update) => assignment[update] = req.body[update])
         await assignment.save()
