@@ -7,7 +7,7 @@ const enrollmentRouter = require('./routers/enrollmentRouter')
 const assignmentRouter = require('./routers/assignmentRouter')
 const submissionRouter = require('./routers/submissionRouter')
 
-const port = 3000
+const port = process.env.port || 3000
 
 server.app.use(express.json())
 
