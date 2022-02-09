@@ -1,5 +1,4 @@
 const mongoose = require('mongoose')
-const errorHandler = require('../db/utils/errors')
 
 const courseSchema = new mongoose.Schema({
     educator_id: {
@@ -9,7 +8,7 @@ const courseSchema = new mongoose.Schema({
     },
     name: {
         type: String,
-        required: true,
+        required: [true, 'Need to provide a name'],
         unique: true,
         trim: true
     },
@@ -25,20 +24,20 @@ const courseSchema = new mongoose.Schema({
     },
     capacity: {
         type: Number,
-        default: 0,
+        required: [true, 'Need to provide the capacity of the course'],
         validate(value) {
             if(value < 0) {
-                throw new Error('Course capacity cannot be negative')
+                throw new Error('Course capacity has to be positive')
             }
         }
     },
     start_date: {
         type: Date,
-        required: true
+        required: [true, 'Course start date must be provided']
     },
     end_date: {
         type: Date,
-        required: true
+        required: [true, 'Course end date must be provided']
     }
 }, {
     timestamps: {
@@ -77,6 +76,17 @@ courseSchema.pre('save', async function(next) {
     if(course.start_date.getTime() > course.end_date.getTime()) throw 'End date should be be after start date'
     next()
 })
+
+const errorHandler = function (error, res, next) {
+    if(error.code === 11000) {
+        next('Course already registered with the same name!')
+    } else if(error.name === 'ValidationError') { 
+        let errorMsg = Object.values(error.errors)[0].message 
+        next(errorMsg)
+    } else {
+        next()
+    }
+}
 
 courseSchema.post('save', errorHandler)
 courseSchema.post('update', errorHandler)

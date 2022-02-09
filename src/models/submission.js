@@ -1,5 +1,4 @@
 const mongoose = require('mongoose')
-const errorHandler = require('../db/utils/errors')
 
 const submissionSchema = new mongoose.Schema({
     student_id: {
@@ -14,7 +13,7 @@ const submissionSchema = new mongoose.Schema({
     },
     file_url: {
         type: Buffer, 
-        required: true
+        required: [true, 'No attachement provided']
     },
     grade: {
         type: String,
@@ -41,6 +40,17 @@ submissionSchema.methods.toJSON = function () {
     delete submissionObject.__v
 
     return submissionObject
+}
+
+const errorHandler = function (error, res, next) {
+    if(error.code === 11000) {
+        next('You can submit only once.')
+    } else if(error.name === 'ValidationError') {
+        let errorMsg = Object.values(error.errors)[0].message
+        next(errorMsg)
+    } else {
+        next()
+    }
 }
 
 submissionSchema.post('save', errorHandler)

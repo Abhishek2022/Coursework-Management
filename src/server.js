@@ -27,7 +27,7 @@ const assignmentUpdateQueue = new Queue('assignmentUpdate')
 
 const options = {
     repeat: {
-        every: 6000, // 1min
+        every: 60000, // 1min
         limit: 100
     }
 }
@@ -52,10 +52,15 @@ io.on('connection', (socket) => {
 })
 
 const courseJob = async () => {
-    const courses = await Course.find({})
-    const date = new Date()
-    console.log('Hourly Job - Course Status Updated', date)
-    courses.forEach(async (course) => await course.updateStatus())
+    try {
+        const courses = await Course.find({})
+        const date = new Date()
+        console.log('Hourly Job - Course Status Updated', date)
+        courses.forEach(async (course) => await course.updateStatus())
+    }
+    catch(e) {
+        console.log(e)
+    }
 }
 
 const assignmentJob = async () => {

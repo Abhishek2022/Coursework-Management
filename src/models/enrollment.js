@@ -1,5 +1,4 @@
 const mongoose = require('mongoose')
-const errorHandler = require('../db/utils/errors')
 
 const enrollmentSchema = new mongoose.Schema({
     course_id: {
@@ -26,6 +25,18 @@ enrollmentSchema.methods.toJSON = function() {
     const deleteFields = ['created_at', 'updatedAt','__v']
     deleteFields.forEach((e) => delete enrollmentObject[e]) 
     return enrollmentObject
+}
+
+
+const errorHandler = function (error, res, next) {
+    if(error.code === 11000) {
+        next('Already enrolled for the course!')
+    } else if(error.name === 'ValidationError') {
+        let errorMsg = Object.values(error.errors)[0].message
+        next(errorMsg)
+    } else {
+        next()
+    }
 }
 
 enrollmentSchema.post('save', errorHandler)

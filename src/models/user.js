@@ -1,18 +1,17 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-const errorHandler = require('../db/utils/errors')
 const Course = require('../models/course')
 
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: true,
+        required: [true, 'Enter a name'],
         trim: true
     },
     phone: {
         type: Number,
-        required: true,
+        required: [true, 'Phone number needs to be provided'],
         unique: true,
         trim: true,
         validate(value) {
@@ -23,8 +22,8 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true,
-        minlength: 7
+        required: [true, 'Password needs to be provided'],
+        minlength: [7, 'Password should be atleast 7 characters']
     },
     active: {
         type: Boolean,
@@ -32,7 +31,7 @@ const userSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        required: true,
+        required: [true, 'User type not specified'],
         enum: ['admin', 'educator', 'student']
     }, 
     tokens: [{
@@ -87,6 +86,16 @@ userSchema.pre('save', async function(next) {
     next()
 })
 
+const errorHandler = function (error, res, next) {
+    if(error.code === 11000) {
+        next('Phone number already exists!')
+    } else if(error.name === 'ValidationError') {
+        let errorMsg = Object.values(error.errors)[0].message
+        next(errorMsg)
+    } else {
+        next()
+    }
+}
 
 userSchema.post('save', errorHandler)
 userSchema.post('update', errorHandler)

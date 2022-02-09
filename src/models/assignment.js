@@ -1,5 +1,4 @@
 const mongoose = require('mongoose')
-const errorHandler = require('../db/utils/errors')
 
 const assignmentSchema = new mongoose.Schema({
     course_id: {
@@ -9,14 +8,15 @@ const assignmentSchema = new mongoose.Schema({
     },
     description: {
         type: String,
+        required: [true, 'Assignment description cannot be empty']
     },
     start_time: {
         type: Date,
-        required: true
+        required: [true, 'Submission start time needs to be provided']
     },
     end_time: {
         type: Date,
-        required: true
+        required: [true, 'Submission end time needs to be provided']
     }
 }, {
     timestamps: {
@@ -47,6 +47,16 @@ assignmentSchema.pre('save', async function(next) {
     next()
 })
 
+const errorHandler = function (error, res, next) {
+    if(error.code === 11000) {
+        next('Duplicate Assignment')
+    } else if(error.name === 'ValidationError') { 
+        let errorMsg = Object.values(error.errors)[0].message 
+        next(errorMsg)
+    } else {
+        next()
+    }
+}
 
 assignmentSchema.post('save', errorHandler)
 assignmentSchema.post('update', errorHandler)
