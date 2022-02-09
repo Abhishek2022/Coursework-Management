@@ -27,7 +27,7 @@ const assignmentUpdateQueue = new Queue('assignmentUpdate')
 
 const options = {
     repeat: {
-        every: 60000, // 1min
+        every: 10000, // 10 sec
         limit: 100
     }
 }

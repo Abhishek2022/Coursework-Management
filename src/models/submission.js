@@ -34,7 +34,7 @@ submissionSchema.methods.toJSON = function () {
     const submission = this
     const submissionObject = submission.toObject()
 
-    submissionObject.file_link = 'http://localhost:3000/submissions/view/'+submissionObject._id.toString()
+    submissionObject.file_link = 'http://34.93.172.193/view/'+submissionObject._id.toString()
     delete submissionObject.file_url
     delete submissionObject.updated_at
     delete submissionObject.__v

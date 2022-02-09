@@ -6,7 +6,7 @@ const auth = require('../middleware/auth')
 const router = express()
 
 // Create a user
-router.post('/register', async (req, res) => {
+router.post('/register', auth.adminAuth, async (req, res) => {
     try {
         const user = new User(req.body)
         await user.save()
